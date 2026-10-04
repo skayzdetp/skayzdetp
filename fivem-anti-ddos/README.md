@@ -160,6 +160,10 @@ Jedes Modul hat drei Modi: **Off**, **Monitor** (nur erkennen und melden – *ni
 
 Vorsichtige Standardwerte sind Absicht: Ein Schutz, der echte Spieler aussperrt, ist schlimmer als keiner.
 
+> **„Bekannte Spieler“** (für den Under-attack-Modus) lernt FX Shield erst **ab der Installation**: Wer nach dem Einrichten einmal beigetreten ist, gilt als bekannt
+> (gespeichert in `known.json`, bis zu 50 000 Lizenzen, 90 Tage). In den ersten Tagen ist diese Liste klein – ein Angriff direkt nach der Installation würde
+> daher auch Stammspieler aussperren, die noch nie *seit der Installation* online waren. Wer dieses Risiko nicht will, stellt „New players during an attack“ auf *Allow*.
+
 ### Empfohlener Einstieg
 
 1. **Zuerst auf einem Testserver** ausprobieren.
