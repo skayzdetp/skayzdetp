@@ -110,8 +110,8 @@ function Guard.evaluate(info, now, nowMs)
 
     local ctx = { ip = info.ip, license = info.license, name = info.name, now = now, monitored = false }
 
-    -- 1. allowlisted players and loopback (local testing) are never touched
-    if info.ip == '127.0.0.1' or Lists.isAllowed(info.ip, info.ids, now) then
+    -- 1. allowlisted players are never touched
+    if Lists.isAllowed(info.ip, info.ids, now) then
         Stats.count('allowed')
         return { allow = true, bypass = true }
     end

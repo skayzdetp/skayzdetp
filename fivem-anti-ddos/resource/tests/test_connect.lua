@@ -197,9 +197,26 @@ T.test('Config.LocalAllowlist works without any backend', function()
     T.notOk(H.connect({ src = 1, ip = '5.5.5.5', license = 'owner' }).rejected)
 end)
 
-T.test('loopback connections (local testing) are never touched', function()
-    local H = boot()
-    for _ = 1, 30 do T.notOk(H.connect({ src = nextId(), ip = '127.0.0.1' }).rejected) end
+T.test('hidden IPs: the 127.0.0.1 placeholder is "unknown", so players are never throttled as one big group', function()
+    -- real FXServer returns 127.0.0.1 for EVERY player while sv_endpointprivacy is on (its default)
+    local H, FXS = boot(nil, { convars = { sv_endpointprivacy = 'true' } })
+    -- a restart wave: 60 different players reconnect within seconds
+    for i = 1, 60 do
+        local r = H.connect({ src = 7000 + i, ip = ('198.51.100.%d'):format(i), license = 'wave' .. i })
+        T.notOk(r.rejected, 'player ' .. i .. ' must not be rejected')
+    end
+    T.notOk(FXS.Lists.isBlocked(nil, {}, FXS.Util.now()))
+    T.eq(FXS.Stats.takeBatch().stats.blocked, 0)
+end)
+
+T.test('hidden IPs: nobody is exempted either – license limits, blocklist and identity checks still apply', function()
+    local H, FXS = boot(nil, { convars = { sv_endpointprivacy = 'true' } })
+    FXS.Lists.applySnapshot({ block = { { kind = 'identifier', value = 'license:banned' } } }, 1, FXS.Util.now())
+    T.ok(H.connect({ src = 1, ip = '198.51.100.1', license = 'banned' }).rejected, 'blocklist by license')
+    T.ok(H.connect({ src = 2, ip = '198.51.100.2', license = false }).rejected, 'no license')
+    T.ok(H.connect({ src = 3, ip = '198.51.100.3', license = 'ok', name = '' }).rejected, 'empty name')
+    for _ = 1, 6 do H.connect({ src = 4, ip = '198.51.100.4', license = 'spam' }) end
+    T.ok(H.connect({ src = 5, ip = '198.51.100.5', license = 'spam' }).rejected, 'license flood')
 end)
 
 -- ─── identity and names ─────────────────────────────────────────────────────

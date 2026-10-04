@@ -158,7 +158,7 @@ export const PROTECTIONS: ProtectionDef[] = [
     title: 'Connection flood guard',
     summary: 'Rate-limits connection attempts per IP address and per Rockstar license and temporarily bans offenders.',
     caveat:
-      'IP based limits need real player IPs. They do not work if sv_endpointprivacy is enabled, or if all players arrive through one proxy IP (configure your proxy to pass the real client IP on – see the FiveM documentation on reverse proxies).',
+      'IP based limits need real player IPs, but FXServer hides them by default (sv_endpointprivacy): add "sv_endpointprivacy false" to your server.cfg. Without it only the license limits work. Behind a proxy, it must pass the real client IP on.',
     modes: STD_MODES,
     defaultMode: 'enforce',
     fields: [

@@ -169,9 +169,10 @@ export function OverviewTab() {
       {s.online && s.endpointPrivacy && ipProtectionOn ? (
         <Alert>
           <TriangleAlertIcon />
-          <AlertTitle>Player IP addresses are hidden</AlertTitle>
+          <AlertTitle>FX Shield cannot see player IP addresses</AlertTitle>
           <AlertDescription>
-            <code>sv_endpointprivacy</code> is enabled, so IP-based limits cannot work. License-based limits still do. Disable it to get full protection.
+            FXServer hides them while <code>sv_endpointprivacy</code> is on (its default), so IP-based limits are inactive. License-based limits, the blocklist by license and
+            under-attack mode still work. Add <code>sv_endpointprivacy false</code> to your server.cfg and restart to get full protection.
           </AlertDescription>
         </Alert>
       ) : null}

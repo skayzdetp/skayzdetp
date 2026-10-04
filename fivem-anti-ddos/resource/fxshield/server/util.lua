@@ -120,8 +120,10 @@ function U.parseCidr(s)
     return n & U.maskFor(plen), plen
 end
 
---- Canonical text form of a player endpoint, or nil when it is unusable
---- (empty, 0.0.0.0 as returned with sv_endpointprivacy, garbage).
+--- Canonical text form of a player endpoint, or nil when it is unusable: empty, garbage, and the placeholders
+--- FXServer reports while player IPs are hidden (sv_endpointprivacy, on by default): 127.0.0.1 / 0.0.0.0 / ::1.
+--- A real remote client is never on loopback, so these must not be treated as an address – otherwise ALL players
+--- would look like one single "player" (and share one rate limit, or one allowlist bypass).
 function U.normalizeIp(raw)
     if type(raw) ~= 'string' then return nil end
     local s = U.trim(raw)
@@ -132,14 +134,14 @@ function U.normalizeIp(raw)
 
     local n = U.parseIpv4(s)
     if n then
-        if n == 0 then return nil end
+        if n == 0 or (n >> 24) == 127 then return nil end
         return U.ipv4ToString(n)
     end
 
     local inner = s:match('^%[([%x:%.]+)%]') or s -- "[::1]:30120"
     local mapped = inner:lower():match('^::ffff:(%d+%.%d+%.%d+%.%d+)$')
     if mapped then return U.normalizeIp(mapped) end
-    if inner:find(':', 1, true) and inner:match('^[%x:%.]+$') and inner ~= '::' then
+    if inner:find(':', 1, true) and inner:match('^[%x:%.]+$') and inner ~= '::' and inner ~= '::1' then
         return inner:lower()
     end
     return nil

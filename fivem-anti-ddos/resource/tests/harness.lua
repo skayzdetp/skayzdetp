@@ -320,7 +320,8 @@ function Harness.new(opts)
     env.GetPlayerEndpoint = function(src)
         local p = pd(src)
         if not p then return nil end
-        if H.convars.sv_endpointprivacy == 'true' then return '0.0.0.0' end
+        -- real FXServer: with sv_endpointprivacy (on by default) scripts get a loopback placeholder, not the IP
+        if H.convars.sv_endpointprivacy == 'true' then return '127.0.0.1' end
         return p.ip
     end
     env.GetPlayerIdentifiers = function(src)
@@ -328,7 +329,7 @@ function Harness.new(opts)
         if not p then return {} end
         local list = {}
         for _, id in ipairs(p.ids) do list[#list + 1] = id end
-        if H.convars.sv_endpointprivacy ~= 'true' and p.ip then list[#list + 1] = 'ip:' .. p.ip end
+        if p.ip then list[#list + 1] = 'ip:' .. (H.convars.sv_endpointprivacy == 'true' and '127.0.0.1' or p.ip) end
         return list
     end
     env.GetPlayerName = function(src)

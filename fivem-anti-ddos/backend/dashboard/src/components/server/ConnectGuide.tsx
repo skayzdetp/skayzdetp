@@ -24,6 +24,10 @@ export function ConnectGuide({ apiKey, keyPrefix }: { apiKey?: string; keyPrefix
             <code className="rounded bg-muted px-1 py-0.5 text-xs">sets</code>.
           </p>
           <CodeBlock code={apiKey ? serverCfgSnippet(apiKey) : serverCfgSnippet(shownKey)} copyLabel="Copy" />
+          <p className="text-xs text-muted-foreground">
+            Recommended: also add <code className="rounded bg-muted px-1 py-0.5">sv_endpointprivacy false</code>. FXServer hides player IP addresses by default, and without them
+            the IP-based protections cannot work (the license-based ones still do).
+          </p>
         </div>
       </li>
       <li className="flex gap-3">

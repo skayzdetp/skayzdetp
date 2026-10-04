@@ -69,7 +69,8 @@ local function serverInfo()
         tickMs = Sync.health.tickMs,
         onesync = GetConvar('onesync', 'off'),
         build = U.safeText(GetConvar('version', ''), 120),
-        endpointPrivacy = GetConvar('sv_endpointprivacy', 'false') == 'true',
+        -- the convar only tells half the story (it may be on by default): also report what we actually observed
+        endpointPrivacy = FXS.Players.ipUnavailable or GetConvar('sv_endpointprivacy', 'false') == 'true',
     }
 end
 

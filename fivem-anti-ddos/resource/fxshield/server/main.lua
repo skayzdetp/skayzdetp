@@ -41,7 +41,7 @@ local function startup()
         U.warn('OneSync is disabled: the game event, entity and lockdown guards cannot work (connection protection still does).')
     end
     if GetConvar('sv_endpointprivacy', 'false') == 'true' then
-        U.warn('sv_endpointprivacy is enabled: player IP addresses are hidden, IP based protections are inactive.')
+        U.warn('sv_endpointprivacy is enabled: player IP addresses are hidden, IP based protections are inactive (license based ones still work).')
     end
 
     Stats.event({

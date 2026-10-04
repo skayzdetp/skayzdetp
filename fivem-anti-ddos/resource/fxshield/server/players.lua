@@ -25,13 +25,14 @@ function Players.collect(src, name)
 
     if not ip and not Players.ipUnavailable then
         Players.ipUnavailable = true
-        U.warn('could not read player IP addresses (sv_endpointprivacy enabled?). IP based protections are inactive.')
+        U.warn('player IP addresses are hidden by FXServer (sv_endpointprivacy, on by default). IP based protections are inactive; '
+            .. 'license based protections still work. Add `sv_endpointprivacy false` to your server.cfg to enable the IP based ones.')
         FXS.Stats.event({
             type = 'warning',
             rule = 'endpointPrivacy',
             severity = 'warn',
             action = 'logged',
-            detail = 'Player IP addresses are not available (sv_endpointprivacy?). IP based protections cannot work.',
+            detail = 'Player IP addresses are hidden (sv_endpointprivacy). IP based protections cannot work – set sv_endpointprivacy false.',
         })
     end
 

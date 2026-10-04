@@ -15,7 +15,9 @@ die im Dashboard eingestellten Schutzmodule durch. Vollständige Anleitung: [Hau
    ```
 
    `set`, **nicht** `setr`/`sets` (sonst sehen alle Spieler den Key).
-3. Optional: Team von den In-Game-Schutzmodulen ausnehmen: `add_ace group.admin fxshield.bypass allow`
+3. **Empfohlen:** `sv_endpointprivacy false` in die `server.cfg`. FXServer verbirgt Spieler-IPs standardmäßig (`GetPlayerEndpoint` liefert `127.0.0.1`);
+   ohne IPs sind die IP-basierten Limits inaktiv, die lizenzbasierten Schutzfunktionen laufen weiter.
+4. Optional: Team von den In-Game-Schutzmodulen ausnehmen: `add_ace group.admin fxshield.bypass allow`
 
 ## Dateien
 
@@ -70,7 +72,7 @@ end)
 ## Verhalten, auf das du dich verlassen kannst
 
 * **Fail-open:** Wirft ein Handler dieser Resource einen Fehler, wird der Spieler durchgelassen und der Fehler (gedrosselt) geloggt.
-* **Eigene Allowlist** (`Config.LocalAllowlist`) und Loopback (`127.0.0.1`) werden nie angefasst.
+* **Eigene Allowlist** (`Config.LocalAllowlist`) wird nie angefasst. Platzhalter-Adressen (`127.x.x.x`, `0.0.0.0`) gelten als „IP unbekannt“.
 * **Backend weg?** Es gelten die zuletzt empfangenen Einstellungen/Listen aus `cache.json`; Statistik wird nachgeliefert.
 * **Speicher begrenzt:** Rate-Limit-Tabellen, Listen (20 000 Einträge), bekannte Spieler (50 000) und Ereignispuffer haben feste Obergrenzen.
 * Der API-Key wird weder geloggt noch an Clients gesendet.

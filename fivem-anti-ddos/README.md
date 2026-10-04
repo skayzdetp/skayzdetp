@@ -29,8 +29,8 @@ FX Shield ist ein **Schutz auf Anwendungsebene (Layer 7)**. Es läuft *innerhalb
 
 | Angriff / Problem | Schutzmodul |
 |---|---|
-| Join-/Reconnect-Floods, Bots, die alle Slots füllen | Connection flood guard, Under-attack mode |
-| Mehrere Accounts / Bots hinter einer IP | Accounts per IP |
+| Join-/Reconnect-Floods, Bots, die alle Slots füllen | Connection flood guard (pro Lizenz, mit sichtbaren IPs auch pro IP), Under-attack mode |
+| Mehrere Accounts / Bots hinter einer IP *(braucht sichtbare IPs, siehe unten)* | Accounts per IP |
 | Clients ohne gültige Lizenz, leere/unsichtbare/Exploit-Namen | Identity & name check |
 | Cheater-Clients, die den Server per **Event-Spam** crashen oder laggen (Explosionen, Partikel, Feuer, Projektile) | Game event flood guard |
 | Entity-Spam (Fahrzeuge/Peds/Objekte), Chat-Flood | Entity spam guard, Entity lockdown, Chat flood guard |
@@ -55,10 +55,10 @@ Spielmechanik und die Slots, aber nicht deine Bandbreite.
 | Was | Wie geprüft |
 |---|---|
 | Backend (Auth, API-Keys, Config, Listen, Protokoll, Statistik) | 77 automatische Tests |
-| Resource-Logik (alle Schutzmodule, Sync, Cache, Fehlerfälle) | 130 Lua-Tests gegen einen nachgebauten FiveM-Server |
+| Resource-Logik (alle Schutzmodule, Sync, Cache, Fehlerfälle) | 131 Lua-Tests gegen einen nachgebauten FiveM-Server |
 | Zusammenspiel Resource ⇄ Backend | End-to-End-Test: die echte Lua-Resource spricht per echtem HTTP mit dem echten Backend (Konfig ändern, Blocklist, Statistik, Ausfall des Backends, Key-Wechsel) |
 | Dashboard | Headless-Browser-Durchlauf (Setup, Server anlegen, Einstellungen speichern, Listen, Events, Accounts, Light/Dark, Mobil) ohne Konsolenfehler |
-| **Auf einem echten FXServer** | **nicht getestet** – dafür stand keine Umgebung zur Verfügung. Die verwendeten FiveM-Funktionen und -Events sind Standard, aber teste die Resource zuerst auf einem Testserver (siehe „Empfohlener Einstieg“). |
+| **Auf einem echten FXServer** | **nicht getestet** – dafür stand keine Umgebung zur Verfügung. Die verwendeten Events, Natives und Signaturen (`playerConnecting` + `CancelEvent`, `explosionEvent`, `ptFxEvent`, `entityCreating`, `SetRoutingBucketEntityLockdownMode`, `PerformHttpRequest`, `server_only` …) wurden gegen die offizielle FiveM-Dokumentation und den FXServer-Quelltext abgeglichen; dabei kam z. B. das Verhalten von `sv_endpointprivacy` ans Licht und wurde berücksichtigt. Teste die Resource trotzdem zuerst auf einem Testserver (siehe „Empfohlener Einstieg“). |
 | Docker-Image | Dockerfile geschrieben, die Build-/Runtime-Schritte lokal nachgestellt; das Image selbst wurde nicht gebaut |
 
 ---
@@ -105,6 +105,15 @@ und den fertigen `server.cfg`-Block.
    ```
 
    Verwende `set`, **niemals** `setr` oder `sets` – die würden den Key an alle Spieler schicken.
+
+   **Empfohlen, sonst fehlen die IP-basierten Schutzfunktionen:** FXServer verbirgt Spieler-IPs standardmäßig (`sv_endpointprivacy`, `GetPlayerEndpoint`
+   liefert dann `127.0.0.1`). Ohne IPs arbeitet FX Shield nur mit **Lizenz-Limits, Blocklist nach Lizenz/Discord-ID, Identity-Check, Under-attack-Modus und
+   den In-Game-Schutzmodulen** – die Limits pro IP und „Accounts per IP“ sind dann inaktiv. Mit
+   ```cfg
+   sv_endpointprivacy false
+   ```
+   in der `server.cfg` sieht FX Shield die IPs (sie sind dann auch für andere Server-Scripts lesbar – das ist deine Entscheidung). Das Dashboard zeigt einen
+   Hinweis, solange keine IPs verfügbar sind.
 3. Server (neu)starten. In der Server-Konsole erscheint:
 
    ```
@@ -231,8 +240,9 @@ Ordner: `resource/fxshield` – serverseitig, es wird **nichts an Spieler** ausg
   auf Grenzen geklemmt, es wird **nie Code** aus der Antwort ausgeführt. Bei einem Fehler in der Resource wird der Spieler **durchgelassen**
   (Fail-open), damit ein Bug nie alle aussperrt.
 
-Voraussetzungen: FXServer mit `lua54` (Standard), für die In-Game-Schutzmodule **OneSync**. Für IP-basierte Limits dürfen die IPs nicht verborgen sein
-(`sv_endpointprivacy` aus) und – hinter einem Proxy – muss dieser die echte Client-IP weiterreichen.
+Voraussetzungen: aktueller FXServer, für die In-Game-Schutzmodule **OneSync**. Für IP-basierte Limits muss `sv_endpointprivacy false` gesetzt sein
+(sonst meldet FXServer `127.0.0.1` für jeden Spieler) und – hinter einem Proxy – muss dieser die echte Client-IP weiterreichen. Platzhalter-Adressen
+(`127.x.x.x`, `0.0.0.0`) behandelt FX Shield ausdrücklich als „IP unbekannt“, damit nie alle Spieler wie *ein* Spieler gezählt werden.
 
 Protokoll Resource ⇄ Backend: [docs/agent-protocol.md](docs/agent-protocol.md).
 
@@ -263,7 +273,7 @@ cd .. && lua5.4 resource/tests/run.lua    # Lua-Tests der Resource
 |---|---|
 | Dashboard zeigt „Waiting for connection“ | `fxshield_url`/`fxshield_key` in der `server.cfg` prüfen, Konsole nach `[fxshield]`-Meldungen durchsuchen; `fxshield status` ausführen; Erreichbarkeit: `curl -H "Authorization: Bearer fxs_…" https://deine-url/api/agent/v1/whoami` |
 | Konsole: *rejected the API key (HTTP 401)* | Key falsch oder rotiert → neuen Key im Dashboard erzeugen und in die `server.cfg` eintragen |
-| Konsole: *IP based protections are inactive* | `sv_endpointprivacy` ist an oder die IP ist nicht lesbar – IP-Limits können dann nicht arbeiten |
+| Konsole: *player IP addresses are hidden* / Dashboard: „cannot see player IP addresses“ | FXServer verbirgt IPs (Standard). `sv_endpointprivacy false` in die `server.cfg`, Server neu starten. Bis dahin gelten nur die lizenzbasierten Schutzfunktionen |
 | In-Game-Schutz tut nichts | OneSync ist aus (das Dashboard weist darauf hin) |
 | Ein Spieler wird zu Unrecht gesperrt | `fxshield unban …`, Allowlist-Eintrag, Modul auf *Monitor*; Details stehen unter *Events* |
 | `Cannot find module 'node:sqlite'` | Node ist zu alt – Version 22.13 oder neuer installieren |
