@@ -1,0 +1,20 @@
+# Start the backend + dashboard:   docker compose up -d --build
+# First start: read the one-time setup token with   docker compose logs fxshield
+services:
+  fxshield:
+    build: ./backend
+    restart: unless-stopped
+    ports:
+      - "${FXSHIELD_PORT:-8080}:8080"
+    environment:
+      # public address behind your reverse proxy, e.g. https://shield.example.com (enables secure cookies)
+      PUBLIC_URL: ${PUBLIC_URL:-}
+      # true when a reverse proxy (Caddy, nginx, Cloudflare…) sits in front of the container
+      TRUST_PROXY: ${TRUST_PROXY:-false}
+      EVENT_RETENTION_DAYS: ${EVENT_RETENTION_DAYS:-14}
+      SETUP_TOKEN: ${SETUP_TOKEN:-}
+    volumes:
+      - fxshield-data:/data
+
+volumes:
+  fxshield-data:

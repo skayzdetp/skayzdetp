@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend + dashboard
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      # the end-to-end test runs the real Lua resource against the real backend
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends lua5.4
+      - run: npm ci
+      - name: Typecheck (backend + dashboard)
+        run: npm run typecheck
+      - name: Lua schema is up to date
+        run: npm run gen:lua-schema -- --check
+      - name: Tests (unit, HTTP, end-to-end with the Lua resource)
+        run: npm test
+      - name: Build (server + dashboard)
+        run: npm run build
+
+  resource:
+    name: FiveM resource (Lua)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends lua5.4
+      - name: Syntax check
+        run: |
+          for f in $(find resource/fxshield -name '*.lua'); do luac5.4 -p "$f"; done
+      - name: Unit tests (mocked FiveM runtime)
+        run: lua5.4 resource/tests/run.lua

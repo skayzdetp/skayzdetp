@@ -1,0 +1,11 @@
+node_modules
+dashboard/node_modules
+dist
+dashboard/dist
+data
+coverage
+test
+.env
+.env.*
+!.env.example
+*.log

@@ -1,0 +1,24 @@
+# dependencies / build output
+node_modules/
+dist/
+coverage/
+
+# runtime data (SQLite database, uploads, caches)
+data/
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+
+# secrets
+.env
+.env.*
+!.env.example
+
+# resource runtime cache (written by the FiveM resource)
+resource/fxshield/cache.json
+
+# misc
+*.log
+.DS_Store
+Thumbs.db
